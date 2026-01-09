@@ -45,8 +45,16 @@ def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:
     print(f"New dataset shape: {df.shape}")
     return df
 
+def ensure_directories_exist():
+    """Create data/raw and data/processed directories if they don't exist."""
+    directories = ["data/raw", "data/processed"]
+    for directory in directories:
+        os.makedirs(directory, exist_ok=True)
+        print(f"Ensured directory exists: {directory}")
+
 def save_processed_data(df: pd.DataFrame, filename: str):
     """Save cleaned data to data/processed/ folder."""
+    ensure_directories_exist()  # Ensure directory exists before saving
     save_path = os.path.join("data/processed", filename)
     df.to_csv(save_path, index=False)
     print(f"\nProcessed data saved to: {save_path}")
@@ -97,6 +105,9 @@ def check_cleaned_data(df: pd.DataFrame, verbose: bool = True) -> dict:
             print(f"{col}: {dtype}")
 
     return results
+
+# Ensure directories exist before processing
+ensure_directories_exist()
 
 DATA_PATH = "data/raw/DataScience_salaries_2025.csv"
 
