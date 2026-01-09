@@ -1,0 +1,2621 @@
+================================================================================
+CLUSTERING MODEL ANALYSIS REPORT
+================================================================================
+Generated on: 2026-01-09 19:53:30
+
+================================================================================
+CLUSTERING MODEL IMPLEMENTATION
+================================================================================
+
+This script implements:
+  - K-Means Clustering (with Elbow method for optimal k)
+  - DBSCAN Clustering
+  - Model evaluation and comparison
+  - Cluster visualization and analysis
+  - Results saved to reports/results/ and reports/figures/
+================================================================================
+LOADING AND PREPARING DATA
+================================================================================
+
+Loaded dataset shape: (46637, 11)
+Columns: ['work_year', 'experience_level', 'employment_type', 'job_title', 'salary', 'salary_currency', 'salary_in_usd', 'employee_residence', 'remote_ratio', 'company_location', 'company_size']
+
+Basic Statistics:
+  Salary range: $15,000 - $800,000
+  Mean salary: $151,412
+  Median salary: $139,100
+
+================================================================================
+FEATURE SELECTION FOR CLUSTERING
+================================================================================
+
+Selected Features for Clustering:
+  1. salary_in_usd - Salary level (primary dimension)
+  2. experience_level - Job seniority (EN/MI/SE/EX)
+  3. company_size - Company size (S/M/L)
+  4. remote_ratio - Remote work preference (0/50/100)
+  5. work_year - Year factor
+
+experience_level encoding:
+  EN -> 0
+  EX -> 1
+  MI -> 2
+  SE -> 3
+
+company_size encoding:
+  L -> 0
+  M -> 1
+  S -> 2
+
+Final feature set (5 features): ['salary_in_usd', 'remote_ratio', 'work_year', 'experience_level_encoded', 'company_size_encoded']
+
+Feature matrix shape: (46637, 5)
+
+Feature statistics:
+       salary_in_usd  remote_ratio     work_year  experience_level_encoded  company_size_encoded
+count   46637.000000  46637.000000  46637.000000              46637.000000          46637.000000
+mean   151411.819993     24.960868   2024.113837                  2.268435              0.976414
+std     77492.347696     43.095411      0.725142                  0.975738              0.178987
+min     15000.000000      0.000000   2020.000000                  0.000000              0.000000
+25%     96400.000000      0.000000   2024.000000                  2.000000              1.000000
+50%    139100.000000      0.000000   2024.000000                  3.000000              1.000000
+75%    190500.000000     50.000000   2025.000000                  3.000000              1.000000
+max    800000.000000    100.000000   2025.000000                  3.000000              2.000000
+
+================================================================================
+FEATURE SCALING
+================================================================================
+
+Features scaled using StandardScaler
+  All features normalized to mean=0, std=1
+Scaled feature statistics:
+          Feature_0     Feature_1     Feature_2     Feature_3     Feature_4
+count  4.663700e+04  4.663700e+04  4.663700e+04  4.663700e+04  4.663700e+04
+mean   1.023832e-16 -2.925235e-17  1.060885e-13  2.462073e-16  2.535204e-16
+std    1.000011e+00  1.000011e+00  1.000011e+00  1.000011e+00  1.000011e+00
+min   -1.760345e+00 -5.792063e-01 -5.673208e+00 -2.324866e+00 -5.455265e+00
+25%   -7.099076e-01 -5.792063e-01 -1.569870e-01 -2.751127e-01  1.317784e-01
+50%   -1.588796e-01 -5.792063e-01 -1.569870e-01  7.497639e-01  1.317784e-01
+75%    5.044188e-01  5.810224e-01  1.222068e+00  7.497639e-01  1.317784e-01
+max    8.369796e+00  1.741251e+00  1.222068e+00  7.497639e-01  5.718821e+00
+
+================================================================================
+TRAIN/TEST SPLIT
+================================================================================
+
+Train/Test Split: 80%/20%
+Training set shape: (37309, 5)
+Testing set shape: (9328, 5)
+
+================================================================================
+FINDING OPTIMAL K FOR K-MEANS USING ELBOW METHOD
+================================================================================
+
+Testing k values from 2 to 8...
+  k=2: Inertia=148291.56, Silhouette=0.3425
+  k=3: Inertia=116261.27, Silhouette=0.3643
+  k=4: Inertia=91644.72, Silhouette=0.3884
+  k=5: Inertia=75906.88, Silhouette=0.3426
+  k=6: Inertia=66073.05, Silhouette=0.3527
+  k=7: Inertia=58368.89, Silhouette=0.3715
+  k=8: Inertia=54894.76, Silhouette=0.3576
+
+Distance from line (first to last point):
+  k=2: distance=0.00
+  k=3: distance=1.06
+  k=4: distance=1.64
+  k=5: distance=1.65 <-- ELBOW
+  k=6: distance=1.28
+  k=7: distance=0.78
+  k=8: distance=0.00
+
+Elbow Method Analysis:
+  Inertia values: ['148291.56', '116261.27', '91644.72', '75906.88', '66073.05', '58368.89', '54894.76']
+  Rate of decrease (%): ['21.60%', '21.17%', '17.17%', '12.96%', '11.66%', '5.95%']
+
+Optimal k (elbow point): 5
+  This is where the rate of decrease in inertia slows down significantly
+  The elbow point represents the optimal balance between cluster quality and complexity
+
+Elbow method plot saved: reports\figures\elbow_method.png
+
+================================================================================
+TRAINING K-MEANS MODEL
+================================================================================
+
+K-Means trained with 5 clusters
+Inertia (within-cluster sum of squares): 75906.88
+Number of iterations: 17
+Cluster centers shape: (5, 5)
+
+================================================================================
+EVALUATING K-MEANS MODEL
+================================================================================
+
+Training Set Metrics:
+  Silhouette Score: 0.3426 (higher is better, range: -1 to 1)
+  Calinski-Harabasz Score: 13579.90 (higher is better)
+  Davies-Bouldin Score: 1.0132 (lower is better)
+
+Testing Set Metrics:
+  Silhouette Score: 0.3447
+  Calinski-Harabasz Score: 3436.24
+  Davies-Bouldin Score: 1.0113
+
+Training Set Cluster Sizes:
+  Cluster 0: 4728 samples (12.67%)
+  Cluster 1: 6844 samples (18.34%)
+  Cluster 2: 16595 samples (44.48%)
+  Cluster 3: 1041 samples (2.79%)
+  Cluster 4: 8101 samples (21.71%)
+
+Testing Set Cluster Sizes:
+  Cluster 0: 1157 samples (12.40%)
+  Cluster 1: 1655 samples (17.74%)
+  Cluster 2: 4236 samples (45.41%)
+  Cluster 3: 269 samples (2.88%)
+  Cluster 4: 2011 samples (21.56%)
+
+Visualization saved: reports\figures\kmeans_clusters.png
+
+================================================================================
+CLUSTER CHARACTERISTICS ANALYSIS - K-Means
+================================================================================
+
+Cluster 0:
+  Size: 4728 samples (12.67%)
+  Salary Statistics:
+    Mean: $150,267.86
+    Median: $137,000.00
+    Min: $15,129.00
+    Max: $720,000.00
+    Std Dev: $78,059.33
+  Experience Level Distribution:
+    SE: 2474 (52.3%)
+    MI: 1554 (32.9%)
+    EN: 544 (11.5%)
+    EX: 156 (3.3%)
+  Company Size Distribution:
+    M: 4577 (96.8%)
+    L: 132 (2.8%)
+    S: 19 (0.4%)
+  Remote Ratio Distribution:
+    0%: 3501 (74.0%)
+    100%: 1191 (25.2%)
+    50%: 36 (0.8%)
+
+Cluster 1:
+  Size: 6844 samples (18.34%)
+  Salary Statistics:
+    Mean: $150,851.62
+    Median: $138,000.00
+    Min: $15,107.00
+    Max: $750,000.00
+    Std Dev: $77,317.51
+  Experience Level Distribution:
+    SE: 3569 (52.1%)
+    MI: 2250 (32.9%)
+    EN: 811 (11.8%)
+    EX: 214 (3.1%)
+  Company Size Distribution:
+    M: 6623 (96.8%)
+    L: 186 (2.7%)
+    S: 35 (0.5%)
+  Remote Ratio Distribution:
+    0%: 5125 (74.9%)
+    100%: 1679 (24.5%)
+    50%: 40 (0.6%)
+
+Cluster 2:
+  Size: 16595 samples (44.48%)
+  Salary Statistics:
+    Mean: $150,266.61
+    Median: $138,900.00
+    Min: $15,000.00
+    Max: $750,000.00
+    Std Dev: $75,796.87
+  Experience Level Distribution:
+    SE: 8849 (53.3%)
+    MI: 5394 (32.5%)
+    EN: 1877 (11.3%)
+    EX: 475 (2.9%)
+  Company Size Distribution:
+    M: 16041 (96.7%)
+    L: 486 (2.9%)
+    S: 68 (0.4%)
+  Remote Ratio Distribution:
+    0%: 12410 (74.8%)
+    100%: 4085 (24.6%)
+    50%: 100 (0.6%)
+
+Cluster 3:
+  Size: 1041 samples (2.79%)
+  Salary Statistics:
+    Mean: $154,591.34
+    Median: $145,000.00
+    Min: $20,589.00
+    Max: $643,750.00
+    Std Dev: $77,022.86
+  Experience Level Distribution:
+    SE: 541 (52.0%)
+    MI: 355 (34.1%)
+    EN: 112 (10.8%)
+    EX: 33 (3.2%)
+  Company Size Distribution:
+    M: 1006 (96.6%)
+    L: 29 (2.8%)
+    S: 6 (0.6%)
+  Remote Ratio Distribution:
+    0%: 771 (74.1%)
+    100%: 263 (25.3%)
+    50%: 7 (0.7%)
+
+Cluster 4:
+  Size: 8101 samples (21.71%)
+  Salary Statistics:
+    Mean: $152,585.39
+    Median: $140,000.00
+    Min: $15,281.00
+    Max: $800,000.00
+    Std Dev: $79,067.21
+  Experience Level Distribution:
+    SE: 4322 (53.4%)
+    MI: 2560 (31.6%)
+    EN: 940 (11.6%)
+    EX: 279 (3.4%)
+  Company Size Distribution:
+    M: 7852 (96.9%)
+    L: 222 (2.7%)
+    S: 27 (0.3%)
+  Remote Ratio Distribution:
+    0%: 6065 (74.9%)
+    100%: 1985 (24.5%)
+    50%: 51 (0.6%)
+
+================================================================================
+FINDING OPTIMAL DBSCAN PARAMETERS
+================================================================================
+
+Distance statistics:
+  Min: 0.0000
+  Max: 2.9094
+  Mean: 0.0221
+
+Eps candidates: ['0.100', '0.100', '0.100']
+
+Testing parameter combinations...
+  eps=0.100, min_samples=3: n_clusters=209, noise=783, silhouette=0.3216
+  eps=0.100, min_samples=4: n_clusters=142, noise=1022, silhouette=0.3404
+  eps=0.100, min_samples=5: n_clusters=109, noise=1203, silhouette=0.3549
+  eps=0.100, min_samples=3: n_clusters=209, noise=783, silhouette=0.3216
+  eps=0.100, min_samples=4: n_clusters=142, noise=1022, silhouette=0.3404
+  eps=0.100, min_samples=5: n_clusters=109, noise=1203, silhouette=0.3549
+  eps=0.100, min_samples=3: n_clusters=209, noise=783, silhouette=0.3216
+  eps=0.100, min_samples=4: n_clusters=142, noise=1022, silhouette=0.3404
+  eps=0.100, min_samples=5: n_clusters=109, noise=1203, silhouette=0.3549
+
+Optimal parameters:
+  eps: 0.100
+  min_samples: 5
+
+================================================================================
+TRAINING DBSCAN MODEL
+================================================================================
+
+DBSCAN trained
+Number of clusters found: 109
+Number of noise points: 1203 (3.22%)
+Parameters: eps=0.100, min_samples=5
+
+================================================================================
+EVALUATING DBSCAN MODEL
+================================================================================
+
+Training Set Metrics:
+  Silhouette Score: 0.3549
+  Calinski-Harabasz Score: 1716.85
+  Davies-Bouldin Score: 0.4719
+
+Testing Set Metrics:
+  Silhouette Score: 0.3196
+  Calinski-Harabasz Score: 827.72
+  Davies-Bouldin Score: 0.5288
+
+Training Set Cluster Sizes:
+  Noise: 1203 samples (3.22%)
+  Cluster 0: 2838 samples (7.61%)
+  Cluster 1: 1325 samples (3.55%)
+  Cluster 2: 8203 samples (21.99%)
+  Cluster 3: 906 samples (2.43%)
+  Cluster 4: 528 samples (1.42%)
+  Cluster 5: 4029 samples (10.80%)
+  Cluster 6: 2180 samples (5.84%)
+  Cluster 7: 530 samples (1.42%)
+  Cluster 8: 247 samples (0.66%)
+  Cluster 9: 1329 samples (3.56%)
+  Cluster 10: 5755 samples (15.43%)
+  Cluster 11: 2617 samples (7.01%)
+  Cluster 12: 1476 samples (3.96%)
+  Cluster 13: 840 samples (2.25%)
+  Cluster 14: 103 samples (0.28%)
+  Cluster 15: 215 samples (0.58%)
+  Cluster 16: 60 samples (0.16%)
+  Cluster 17: 12 samples (0.03%)
+  Cluster 18: 650 samples (1.74%)
+  Cluster 19: 66 samples (0.18%)
+  Cluster 20: 17 samples (0.05%)
+  Cluster 21: 221 samples (0.59%)
+  Cluster 22: 8 samples (0.02%)
+  Cluster 23: 8 samples (0.02%)
+  Cluster 24: 144 samples (0.39%)
+  Cluster 25: 15 samples (0.04%)
+  Cluster 26: 9 samples (0.02%)
+  Cluster 27: 12 samples (0.03%)
+  Cluster 28: 428 samples (1.15%)
+  Cluster 29: 136 samples (0.36%)
+  Cluster 30: 25 samples (0.07%)
+  Cluster 31: 254 samples (0.68%)
+  Cluster 32: 165 samples (0.44%)
+  Cluster 33: 7 samples (0.02%)
+  Cluster 34: 52 samples (0.14%)
+  Cluster 35: 53 samples (0.14%)
+  Cluster 36: 24 samples (0.06%)
+  Cluster 37: 8 samples (0.02%)
+  Cluster 38: 20 samples (0.05%)
+  Cluster 39: 18 samples (0.05%)
+  Cluster 40: 6 samples (0.02%)
+  Cluster 41: 13 samples (0.03%)
+  Cluster 42: 6 samples (0.02%)
+  Cluster 43: 7 samples (0.02%)
+  Cluster 44: 7 samples (0.02%)
+  Cluster 45: 6 samples (0.02%)
+  Cluster 46: 59 samples (0.16%)
+  Cluster 47: 23 samples (0.06%)
+  Cluster 48: 6 samples (0.02%)
+  Cluster 49: 7 samples (0.02%)
+  Cluster 50: 6 samples (0.02%)
+  Cluster 51: 9 samples (0.02%)
+  Cluster 52: 10 samples (0.03%)
+  Cluster 53: 8 samples (0.02%)
+  Cluster 54: 21 samples (0.06%)
+  Cluster 55: 6 samples (0.02%)
+  Cluster 56: 8 samples (0.02%)
+  Cluster 57: 12 samples (0.03%)
+  Cluster 58: 6 samples (0.02%)
+  Cluster 59: 6 samples (0.02%)
+  Cluster 60: 5 samples (0.01%)
+  Cluster 61: 5 samples (0.01%)
+  Cluster 62: 5 samples (0.01%)
+  Cluster 63: 7 samples (0.02%)
+  Cluster 64: 6 samples (0.02%)
+  Cluster 65: 7 samples (0.02%)
+  Cluster 66: 5 samples (0.01%)
+  Cluster 67: 7 samples (0.02%)
+  Cluster 68: 5 samples (0.01%)
+  Cluster 69: 9 samples (0.02%)
+  Cluster 70: 7 samples (0.02%)
+  Cluster 71: 6 samples (0.02%)
+  Cluster 72: 5 samples (0.01%)
+  Cluster 73: 5 samples (0.01%)
+  Cluster 74: 15 samples (0.04%)
+  Cluster 75: 10 samples (0.03%)
+  Cluster 76: 9 samples (0.02%)
+  Cluster 77: 7 samples (0.02%)
+  Cluster 78: 5 samples (0.01%)
+  Cluster 79: 5 samples (0.01%)
+  Cluster 80: 11 samples (0.03%)
+  Cluster 81: 8 samples (0.02%)
+  Cluster 82: 8 samples (0.02%)
+  Cluster 83: 11 samples (0.03%)
+  Cluster 84: 6 samples (0.02%)
+  Cluster 85: 5 samples (0.01%)
+  Cluster 86: 8 samples (0.02%)
+  Cluster 87: 6 samples (0.02%)
+  Cluster 88: 8 samples (0.02%)
+  Cluster 89: 7 samples (0.02%)
+  Cluster 90: 10 samples (0.03%)
+  Cluster 91: 8 samples (0.02%)
+  Cluster 92: 6 samples (0.02%)
+  Cluster 93: 5 samples (0.01%)
+  Cluster 94: 9 samples (0.02%)
+  Cluster 95: 5 samples (0.01%)
+  Cluster 96: 7 samples (0.02%)
+  Cluster 97: 6 samples (0.02%)
+  Cluster 98: 5 samples (0.01%)
+  Cluster 99: 13 samples (0.03%)
+  Cluster 100: 8 samples (0.02%)
+  Cluster 101: 5 samples (0.01%)
+  Cluster 102: 7 samples (0.02%)
+  Cluster 103: 7 samples (0.02%)
+  Cluster 104: 6 samples (0.02%)
+  Cluster 105: 6 samples (0.02%)
+  Cluster 106: 5 samples (0.01%)
+  Cluster 107: 5 samples (0.01%)
+  Cluster 108: 5 samples (0.01%)
+
+Testing Set Cluster Sizes:
+  Noise: 673 samples (7.21%)
+  Cluster 0: 1412 samples (15.14%)
+  Cluster 1: 534 samples (5.72%)
+  Cluster 2: 695 samples (7.45%)
+  Cluster 3: 1014 samples (10.87%)
+  Cluster 4: 217 samples (2.33%)
+  Cluster 5: 9 samples (0.10%)
+  Cluster 6: 98 samples (1.05%)
+  Cluster 7: 628 samples (6.73%)
+  Cluster 8: 382 samples (4.10%)
+  Cluster 9: 2015 samples (21.60%)
+  Cluster 10: 39 samples (0.42%)
+  Cluster 11: 396 samples (4.25%)
+  Cluster 12: 171 samples (1.83%)
+  Cluster 13: 148 samples (1.59%)
+  Cluster 14: 300 samples (3.22%)
+  Cluster 15: 11 samples (0.12%)
+  Cluster 16: 11 samples (0.12%)
+  Cluster 17: 97 samples (1.04%)
+  Cluster 18: 13 samples (0.14%)
+  Cluster 19: 78 samples (0.84%)
+  Cluster 20: 29 samples (0.31%)
+  Cluster 21: 36 samples (0.39%)
+  Cluster 22: 6 samples (0.06%)
+  Cluster 23: 53 samples (0.57%)
+  Cluster 24: 14 samples (0.15%)
+  Cluster 25: 7 samples (0.08%)
+  Cluster 26: 10 samples (0.11%)
+  Cluster 27: 19 samples (0.20%)
+  Cluster 28: 30 samples (0.32%)
+  Cluster 29: 5 samples (0.05%)
+  Cluster 30: 10 samples (0.11%)
+  Cluster 31: 5 samples (0.05%)
+  Cluster 32: 9 samples (0.10%)
+  Cluster 33: 11 samples (0.12%)
+  Cluster 34: 5 samples (0.05%)
+  Cluster 35: 9 samples (0.10%)
+  Cluster 36: 21 samples (0.23%)
+  Cluster 37: 6 samples (0.06%)
+  Cluster 38: 6 samples (0.06%)
+  Cluster 39: 5 samples (0.05%)
+  Cluster 40: 5 samples (0.05%)
+  Cluster 41: 9 samples (0.10%)
+  Cluster 42: 6 samples (0.06%)
+  Cluster 43: 8 samples (0.09%)
+  Cluster 44: 6 samples (0.06%)
+  Cluster 45: 9 samples (0.10%)
+  Cluster 46: 6 samples (0.06%)
+  Cluster 47: 6 samples (0.06%)
+  Cluster 48: 5 samples (0.05%)
+  Cluster 49: 3 samples (0.03%)
+  Cluster 50: 7 samples (0.08%)
+  Cluster 51: 6 samples (0.06%)
+  Cluster 52: 5 samples (0.05%)
+  Cluster 53: 5 samples (0.05%)
+  Cluster 54: 5 samples (0.05%)
+
+Visualization saved: reports\figures\dbscan_clusters.png
+
+================================================================================
+CLUSTER CHARACTERISTICS ANALYSIS - DBSCAN
+================================================================================
+
+Noise Points:
+  Size: 1203 samples (3.22%)
+  Salary Statistics:
+    Mean: $151,738.74
+    Median: $140,000.00
+    Min: $17,598.00
+    Max: $550,000.00
+    Std Dev: $75,180.45
+  Experience Level Distribution:
+    SE: 625 (52.0%)
+    MI: 393 (32.7%)
+    EN: 151 (12.6%)
+    EX: 34 (2.8%)
+  Company Size Distribution:
+    M: 1169 (97.2%)
+    L: 29 (2.4%)
+    S: 5 (0.4%)
+  Remote Ratio Distribution:
+    0%: 883 (73.4%)
+    100%: 314 (26.1%)
+    50%: 6 (0.5%)
+
+Cluster 0:
+  Size: 2838 samples (7.61%)
+  Salary Statistics:
+    Mean: $153,912.05
+    Median: $142,543.00
+    Min: $16,000.00
+    Max: $774,000.00
+    Std Dev: $79,036.99
+  Experience Level Distribution:
+    SE: 1502 (52.9%)
+    MI: 898 (31.6%)
+    EN: 331 (11.7%)
+    EX: 107 (3.8%)
+  Company Size Distribution:
+    M: 2751 (96.9%)
+    L: 79 (2.8%)
+    S: 8 (0.3%)
+  Remote Ratio Distribution:
+    0%: 2105 (74.2%)
+    100%: 715 (25.2%)
+    50%: 18 (0.6%)
+
+Cluster 1:
+  Size: 1325 samples (3.55%)
+  Salary Statistics:
+    Mean: $149,716.06
+    Median: $137,000.00
+    Min: $15,680.00
+    Max: $720,000.00
+    Std Dev: $77,099.14
+  Experience Level Distribution:
+    SE: 669 (50.5%)
+    MI: 455 (34.3%)
+    EN: 162 (12.2%)
+    EX: 39 (2.9%)
+  Company Size Distribution:
+    M: 1280 (96.6%)
+    L: 38 (2.9%)
+    S: 7 (0.5%)
+  Remote Ratio Distribution:
+    0%: 998 (75.3%)
+    100%: 319 (24.1%)
+    50%: 8 (0.6%)
+
+Cluster 2:
+  Size: 8203 samples (21.99%)
+  Salary Statistics:
+    Mean: $150,083.82
+    Median: $137,972.00
+    Min: $15,000.00
+    Max: $750,000.00
+    Std Dev: $75,712.29
+  Experience Level Distribution:
+    SE: 4366 (53.2%)
+    MI: 2661 (32.4%)
+    EN: 945 (11.5%)
+    EX: 231 (2.8%)
+  Company Size Distribution:
+    M: 7936 (96.7%)
+    L: 224 (2.7%)
+    S: 43 (0.5%)
+  Remote Ratio Distribution:
+    0%: 6186 (75.4%)
+    100%: 1967 (24.0%)
+    50%: 50 (0.6%)
+
+Cluster 3:
+  Size: 906 samples (2.43%)
+  Salary Statistics:
+    Mean: $151,563.00
+    Median: $140,000.00
+    Min: $15,157.00
+    Max: $720,000.00
+    Std Dev: $77,955.90
+  Experience Level Distribution:
+    SE: 455 (50.2%)
+    MI: 318 (35.1%)
+    EN: 100 (11.0%)
+    EX: 33 (3.6%)
+  Company Size Distribution:
+    M: 884 (97.6%)
+    L: 20 (2.2%)
+    S: 2 (0.2%)
+  Remote Ratio Distribution:
+    0%: 677 (74.7%)
+    100%: 222 (24.5%)
+    50%: 7 (0.8%)
+
+Cluster 4:
+  Size: 528 samples (1.42%)
+  Salary Statistics:
+    Mean: $152,998.60
+    Median: $140,900.00
+    Min: $24,000.00
+    Max: $597,478.00
+    Std Dev: $75,793.00
+  Experience Level Distribution:
+    SE: 306 (58.0%)
+    MI: 141 (26.7%)
+    EN: 67 (12.7%)
+    EX: 14 (2.7%)
+  Company Size Distribution:
+    M: 515 (97.5%)
+    L: 10 (1.9%)
+    S: 3 (0.6%)
+  Remote Ratio Distribution:
+    0%: 371 (70.3%)
+    100%: 155 (29.4%)
+    50%: 2 (0.4%)
+
+Cluster 5:
+  Size: 4029 samples (10.80%)
+  Salary Statistics:
+    Mean: $150,415.03
+    Median: $139,803.00
+    Min: $15,000.00
+    Max: $750,000.00
+    Std Dev: $75,015.08
+  Experience Level Distribution:
+    SE: 2106 (52.3%)
+    MI: 1318 (32.7%)
+    EN: 482 (12.0%)
+    EX: 123 (3.1%)
+  Company Size Distribution:
+    M: 3882 (96.4%)
+    L: 135 (3.4%)
+    S: 12 (0.3%)
+  Remote Ratio Distribution:
+    0%: 3024 (75.1%)
+    100%: 981 (24.3%)
+    50%: 24 (0.6%)
+
+Cluster 6:
+  Size: 2180 samples (5.84%)
+  Salary Statistics:
+    Mean: $149,506.63
+    Median: $137,000.00
+    Min: $15,129.00
+    Max: $720,000.00
+    Std Dev: $76,182.80
+  Experience Level Distribution:
+    SE: 1147 (52.6%)
+    MI: 700 (32.1%)
+    EN: 251 (11.5%)
+    EX: 82 (3.8%)
+  Company Size Distribution:
+    M: 2108 (96.7%)
+    L: 60 (2.8%)
+    S: 12 (0.6%)
+  Remote Ratio Distribution:
+    0%: 1615 (74.1%)
+    100%: 550 (25.2%)
+    50%: 15 (0.7%)
+
+Cluster 7:
+  Size: 530 samples (1.42%)
+  Salary Statistics:
+    Mean: $146,107.24
+    Median: $135,000.00
+    Min: $30,000.00
+    Max: $410,000.00
+    Std Dev: $67,053.94
+  Experience Level Distribution:
+    SE: 278 (52.5%)
+    MI: 185 (34.9%)
+    EN: 57 (10.8%)
+    EX: 10 (1.9%)
+  Company Size Distribution:
+    M: 507 (95.7%)
+    L: 23 (4.3%)
+  Remote Ratio Distribution:
+    0%: 412 (77.7%)
+    100%: 115 (21.7%)
+    50%: 3 (0.6%)
+
+Cluster 8:
+  Size: 247 samples (0.66%)
+  Salary Statistics:
+    Mean: $146,873.98
+    Median: $127,200.00
+    Min: $20,000.00
+    Max: $600,000.00
+    Std Dev: $86,187.59
+  Experience Level Distribution:
+    SE: 128 (51.8%)
+    MI: 75 (30.4%)
+    EN: 38 (15.4%)
+    EX: 6 (2.4%)
+  Company Size Distribution:
+    M: 243 (98.4%)
+    L: 4 (1.6%)
+  Remote Ratio Distribution:
+    0%: 178 (72.1%)
+    100%: 69 (27.9%)
+
+Cluster 9:
+  Size: 1329 samples (3.56%)
+  Salary Statistics:
+    Mean: $154,921.41
+    Median: $140,100.00
+    Min: $16,000.00
+    Max: $720,000.00
+    Std Dev: $79,846.62
+  Experience Level Distribution:
+    SE: 698 (52.5%)
+    MI: 463 (34.8%)
+    EN: 126 (9.5%)
+    EX: 42 (3.2%)
+  Company Size Distribution:
+    M: 1294 (97.4%)
+    L: 29 (2.2%)
+    S: 6 (0.5%)
+  Remote Ratio Distribution:
+    0%: 977 (73.5%)
+    100%: 343 (25.8%)
+    50%: 9 (0.7%)
+
+Cluster 10:
+  Size: 5755 samples (15.43%)
+  Salary Statistics:
+    Mean: $150,206.66
+    Median: $137,600.00
+    Min: $15,419.00
+    Max: $750,000.00
+    Std Dev: $78,031.07
+  Experience Level Distribution:
+    SE: 3038 (52.8%)
+    MI: 1887 (32.8%)
+    EN: 660 (11.5%)
+    EX: 170 (3.0%)
+  Company Size Distribution:
+    M: 5560 (96.6%)
+    L: 169 (2.9%)
+    S: 26 (0.5%)
+  Remote Ratio Distribution:
+    0%: 4293 (74.6%)
+    100%: 1434 (24.9%)
+    50%: 28 (0.5%)
+
+Cluster 11:
+  Size: 2617 samples (7.01%)
+  Salary Statistics:
+    Mean: $149,971.52
+    Median: $139,874.00
+    Min: $15,000.00
+    Max: $720,000.00
+    Std Dev: $74,684.84
+  Experience Level Distribution:
+    SE: 1397 (53.4%)
+    MI: 857 (32.7%)
+    EN: 282 (10.8%)
+    EX: 81 (3.1%)
+  Company Size Distribution:
+    M: 2529 (96.6%)
+    L: 80 (3.1%)
+    S: 8 (0.3%)
+  Remote Ratio Distribution:
+    0%: 1938 (74.1%)
+    100%: 656 (25.1%)
+    50%: 23 (0.9%)
+
+Cluster 12:
+  Size: 1476 samples (3.96%)
+  Salary Statistics:
+    Mean: $149,697.18
+    Median: $136,000.00
+    Min: $16,000.00
+    Max: $690,000.00
+    Std Dev: $78,021.37
+  Experience Level Distribution:
+    SE: 808 (54.7%)
+    MI: 443 (30.0%)
+    EN: 175 (11.9%)
+    EX: 50 (3.4%)
+  Company Size Distribution:
+    M: 1424 (96.5%)
+    L: 43 (2.9%)
+    S: 9 (0.6%)
+  Remote Ratio Distribution:
+    0%: 1104 (74.8%)
+    100%: 362 (24.5%)
+    50%: 10 (0.7%)
+
+Cluster 13:
+  Size: 840 samples (2.25%)
+  Salary Statistics:
+    Mean: $157,360.93
+    Median: $142,152.50
+    Min: $25,000.00
+    Max: $800,000.00
+    Std Dev: $86,006.95
+  Experience Level Distribution:
+    SE: 463 (55.1%)
+    MI: 257 (30.6%)
+    EN: 90 (10.7%)
+    EX: 30 (3.6%)
+  Company Size Distribution:
+    M: 817 (97.3%)
+    L: 21 (2.5%)
+    S: 2 (0.2%)
+  Remote Ratio Distribution:
+    0%: 631 (75.1%)
+    100%: 205 (24.4%)
+    50%: 4 (0.5%)
+
+Cluster 14:
+  Size: 103 samples (0.28%)
+  Salary Statistics:
+    Mean: $158,243.04
+    Median: $144,177.00
+    Min: $20,589.00
+    Max: $469,000.00
+    Std Dev: $74,199.79
+  Experience Level Distribution:
+    SE: 62 (60.2%)
+    MI: 24 (23.3%)
+    EN: 13 (12.6%)
+    EX: 4 (3.9%)
+  Company Size Distribution:
+    M: 101 (98.1%)
+    S: 1 (1.0%)
+    L: 1 (1.0%)
+  Remote Ratio Distribution:
+    0%: 82 (79.6%)
+    100%: 20 (19.4%)
+    50%: 1 (1.0%)
+
+Cluster 15:
+  Size: 215 samples (0.58%)
+  Salary Statistics:
+    Mean: $157,851.29
+    Median: $144,000.00
+    Min: $16,000.00
+    Max: $720,000.00
+    Std Dev: $87,404.14
+  Experience Level Distribution:
+    SE: 117 (54.4%)
+    MI: 65 (30.2%)
+    EN: 29 (13.5%)
+    EX: 4 (1.9%)
+  Company Size Distribution:
+    M: 205 (95.3%)
+    L: 8 (3.7%)
+    S: 2 (0.9%)
+  Remote Ratio Distribution:
+    0%: 152 (70.7%)
+    100%: 59 (27.4%)
+    50%: 4 (1.9%)
+
+Cluster 16:
+  Size: 60 samples (0.16%)
+  Salary Statistics:
+    Mean: $148,989.63
+    Median: $148,100.00
+    Min: $20,000.00
+    Max: $315,000.00
+    Std Dev: $73,120.06
+  Experience Level Distribution:
+    SE: 32 (53.3%)
+    MI: 18 (30.0%)
+    EN: 7 (11.7%)
+    EX: 3 (5.0%)
+  Company Size Distribution:
+    M: 60 (100.0%)
+  Remote Ratio Distribution:
+    0%: 46 (76.7%)
+    100%: 14 (23.3%)
+
+Cluster 17:
+  Size: 12 samples (0.03%)
+  Salary Statistics:
+    Mean: $175,428.17
+    Median: $169,635.00
+    Min: $73,100.00
+    Max: $410,000.00
+    Std Dev: $86,424.43
+  Experience Level Distribution:
+    SE: 7 (58.3%)
+    MI: 5 (41.7%)
+  Company Size Distribution:
+    M: 12 (100.0%)
+  Remote Ratio Distribution:
+    0%: 10 (83.3%)
+    100%: 2 (16.7%)
+
+Cluster 18:
+  Size: 650 samples (1.74%)
+  Salary Statistics:
+    Mean: $155,188.07
+    Median: $140,000.00
+    Min: $18,000.00
+    Max: $720,000.00
+    Std Dev: $82,556.82
+  Experience Level Distribution:
+    SE: 363 (55.8%)
+    MI: 202 (31.1%)
+    EN: 64 (9.8%)
+    EX: 21 (3.2%)
+  Company Size Distribution:
+    M: 630 (96.9%)
+    L: 19 (2.9%)
+    S: 1 (0.2%)
+  Remote Ratio Distribution:
+    0%: 487 (74.9%)
+    100%: 160 (24.6%)
+    50%: 3 (0.5%)
+
+Cluster 19:
+  Size: 66 samples (0.18%)
+  Salary Statistics:
+    Mean: $150,952.38
+    Median: $141,200.00
+    Min: $34,000.00
+    Max: $385,000.00
+    Std Dev: $82,881.02
+  Experience Level Distribution:
+    SE: 37 (56.1%)
+    MI: 16 (24.2%)
+    EN: 12 (18.2%)
+    EX: 1 (1.5%)
+  Company Size Distribution:
+    M: 64 (97.0%)
+    S: 1 (1.5%)
+    L: 1 (1.5%)
+  Remote Ratio Distribution:
+    0%: 52 (78.8%)
+    100%: 13 (19.7%)
+    50%: 1 (1.5%)
+
+Cluster 20:
+  Size: 17 samples (0.05%)
+  Salary Statistics:
+    Mean: $126,648.24
+    Median: $120,000.00
+    Min: $62,500.00
+    Max: $241,000.00
+    Std Dev: $55,770.75
+  Experience Level Distribution:
+    SE: 9 (52.9%)
+    MI: 6 (35.3%)
+    EN: 1 (5.9%)
+    EX: 1 (5.9%)
+  Company Size Distribution:
+    M: 17 (100.0%)
+  Remote Ratio Distribution:
+    0%: 14 (82.4%)
+    100%: 3 (17.6%)
+
+Cluster 21:
+  Size: 221 samples (0.59%)
+  Salary Statistics:
+    Mean: $149,572.08
+    Median: $136,800.00
+    Min: $17,805.00
+    Max: $458,000.00
+    Std Dev: $70,446.43
+  Experience Level Distribution:
+    SE: 116 (52.5%)
+    MI: 76 (34.4%)
+    EN: 20 (9.0%)
+    EX: 9 (4.1%)
+  Company Size Distribution:
+    M: 215 (97.3%)
+    L: 6 (2.7%)
+  Remote Ratio Distribution:
+    0%: 161 (72.9%)
+    100%: 59 (26.7%)
+    50%: 1 (0.5%)
+
+Cluster 22:
+  Size: 8 samples (0.02%)
+  Salary Statistics:
+    Mean: $114,630.38
+    Median: $101,602.00
+    Min: $49,750.00
+    Max: $224,800.00
+    Std Dev: $62,040.83
+  Experience Level Distribution:
+    MI: 6 (75.0%)
+    SE: 2 (25.0%)
+  Company Size Distribution:
+    M: 8 (100.0%)
+  Remote Ratio Distribution:
+    0%: 5 (62.5%)
+    100%: 3 (37.5%)
+
+Cluster 23:
+  Size: 8 samples (0.02%)
+  Salary Statistics:
+    Mean: $134,879.62
+    Median: $151,950.00
+    Min: $42,122.00
+    Max: $230,000.00
+    Std Dev: $69,833.25
+  Experience Level Distribution:
+    SE: 5 (62.5%)
+    MI: 2 (25.0%)
+    EN: 1 (12.5%)
+  Company Size Distribution:
+    M: 8 (100.0%)
+  Remote Ratio Distribution:
+    0%: 7 (87.5%)
+    100%: 1 (12.5%)
+
+Cluster 24:
+  Size: 144 samples (0.39%)
+  Salary Statistics:
+    Mean: $147,122.09
+    Median: $135,000.00
+    Min: $16,000.00
+    Max: $510,000.00
+    Std Dev: $83,335.77
+  Experience Level Distribution:
+    SE: 79 (54.9%)
+    MI: 41 (28.5%)
+    EN: 21 (14.6%)
+    EX: 3 (2.1%)
+  Company Size Distribution:
+    M: 140 (97.2%)
+    L: 4 (2.8%)
+  Remote Ratio Distribution:
+    0%: 98 (68.1%)
+    100%: 44 (30.6%)
+    50%: 2 (1.4%)
+
+Cluster 25:
+  Size: 15 samples (0.04%)
+  Salary Statistics:
+    Mean: $176,834.33
+    Median: $151,300.00
+    Min: $31,175.00
+    Max: $400,000.00
+    Std Dev: $106,672.25
+  Experience Level Distribution:
+    SE: 10 (66.7%)
+    MI: 4 (26.7%)
+    EX: 1 (6.7%)
+  Company Size Distribution:
+    M: 15 (100.0%)
+  Remote Ratio Distribution:
+    0%: 11 (73.3%)
+    100%: 4 (26.7%)
+
+Cluster 26:
+  Size: 9 samples (0.02%)
+  Salary Statistics:
+    Mean: $163,096.33
+    Median: $164,000.00
+    Min: $99,000.00
+    Max: $250,200.00
+    Std Dev: $51,844.47
+  Experience Level Distribution:
+    SE: 6 (66.7%)
+    MI: 2 (22.2%)
+    EX: 1 (11.1%)
+  Company Size Distribution:
+    M: 9 (100.0%)
+  Remote Ratio Distribution:
+    0%: 8 (88.9%)
+    100%: 1 (11.1%)
+
+Cluster 27:
+  Size: 12 samples (0.03%)
+  Salary Statistics:
+    Mean: $141,391.50
+    Median: $111,875.00
+    Min: $21,333.00
+    Max: $290,180.00
+    Std Dev: $85,180.17
+  Experience Level Distribution:
+    SE: 6 (50.0%)
+    MI: 5 (41.7%)
+    EN: 1 (8.3%)
+  Company Size Distribution:
+    M: 12 (100.0%)
+  Remote Ratio Distribution:
+    0%: 9 (75.0%)
+    100%: 3 (25.0%)
+
+Cluster 28:
+  Size: 428 samples (1.15%)
+  Salary Statistics:
+    Mean: $146,913.76
+    Median: $132,850.00
+    Min: $20,606.00
+    Max: $720,000.00
+    Std Dev: $75,816.98
+  Experience Level Distribution:
+    SE: 211 (49.3%)
+    MI: 159 (37.1%)
+    EN: 44 (10.3%)
+    EX: 14 (3.3%)
+  Company Size Distribution:
+    M: 410 (95.8%)
+    L: 16 (3.7%)
+    S: 2 (0.5%)
+  Remote Ratio Distribution:
+    0%: 319 (74.5%)
+    100%: 104 (24.3%)
+    50%: 5 (1.2%)
+
+Cluster 29:
+  Size: 136 samples (0.36%)
+  Salary Statistics:
+    Mean: $145,003.74
+    Median: $142,450.00
+    Min: $29,500.00
+    Max: $425,500.00
+    Std Dev: $68,378.93
+  Experience Level Distribution:
+    SE: 72 (52.9%)
+    MI: 47 (34.6%)
+    EN: 15 (11.0%)
+    EX: 2 (1.5%)
+  Company Size Distribution:
+    M: 129 (94.9%)
+    L: 5 (3.7%)
+    S: 2 (1.5%)
+  Remote Ratio Distribution:
+    0%: 95 (69.9%)
+    100%: 40 (29.4%)
+    50%: 1 (0.7%)
+
+Cluster 30:
+  Size: 25 samples (0.07%)
+  Salary Statistics:
+    Mean: $141,955.80
+    Median: $144,900.00
+    Min: $75,000.00
+    Max: $205,000.00
+    Std Dev: $40,594.73
+  Experience Level Distribution:
+    SE: 15 (60.0%)
+    MI: 7 (28.0%)
+    EX: 2 (8.0%)
+    EN: 1 (4.0%)
+  Company Size Distribution:
+    M: 25 (100.0%)
+  Remote Ratio Distribution:
+    0%: 22 (88.0%)
+    100%: 3 (12.0%)
+
+Cluster 31:
+  Size: 254 samples (0.68%)
+  Salary Statistics:
+    Mean: $155,899.33
+    Median: $151,900.00
+    Min: $19,434.00
+    Max: $530,000.00
+    Std Dev: $76,128.76
+  Experience Level Distribution:
+    SE: 139 (54.7%)
+    MI: 80 (31.5%)
+    EN: 28 (11.0%)
+    EX: 7 (2.8%)
+  Company Size Distribution:
+    M: 250 (98.4%)
+    L: 4 (1.6%)
+  Remote Ratio Distribution:
+    0%: 209 (82.3%)
+    100%: 44 (17.3%)
+    50%: 1 (0.4%)
+
+Cluster 32:
+  Size: 165 samples (0.44%)
+  Salary Statistics:
+    Mean: $156,236.61
+    Median: $143,333.00
+    Min: $16,417.00
+    Max: $440,000.00
+    Std Dev: $74,873.77
+  Experience Level Distribution:
+    SE: 83 (50.3%)
+    MI: 60 (36.4%)
+    EN: 19 (11.5%)
+    EX: 3 (1.8%)
+  Company Size Distribution:
+    M: 161 (97.6%)
+    L: 3 (1.8%)
+    S: 1 (0.6%)
+  Remote Ratio Distribution:
+    0%: 129 (78.2%)
+    100%: 36 (21.8%)
+
+Cluster 33:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $149,957.43
+    Median: $140,000.00
+    Min: $15,107.00
+    Max: $275,000.00
+    Std Dev: $90,342.38
+  Experience Level Distribution:
+    MI: 3 (42.9%)
+    SE: 3 (42.9%)
+    EN: 1 (14.3%)
+  Company Size Distribution:
+    M: 7 (100.0%)
+  Remote Ratio Distribution:
+    0%: 5 (71.4%)
+    100%: 2 (28.6%)
+
+Cluster 34:
+  Size: 52 samples (0.14%)
+  Salary Statistics:
+    Mean: $136,376.17
+    Median: $132,650.00
+    Min: $15,281.00
+    Max: $321,000.00
+    Std Dev: $67,720.27
+  Experience Level Distribution:
+    SE: 27 (51.9%)
+    EN: 12 (23.1%)
+    MI: 12 (23.1%)
+    EX: 1 (1.9%)
+  Company Size Distribution:
+    M: 50 (96.2%)
+    L: 2 (3.8%)
+  Remote Ratio Distribution:
+    0%: 44 (84.6%)
+    100%: 6 (11.5%)
+    50%: 2 (3.8%)
+
+Cluster 35:
+  Size: 53 samples (0.14%)
+  Salary Statistics:
+    Mean: $169,575.85
+    Median: $142,700.00
+    Min: $58,000.00
+    Max: $538,400.00
+    Std Dev: $114,884.90
+  Experience Level Distribution:
+    SE: 28 (52.8%)
+    MI: 21 (39.6%)
+    EN: 3 (5.7%)
+    EX: 1 (1.9%)
+  Company Size Distribution:
+    M: 52 (98.1%)
+    L: 1 (1.9%)
+  Remote Ratio Distribution:
+    0%: 39 (73.6%)
+    100%: 14 (26.4%)
+
+Cluster 36:
+  Size: 24 samples (0.06%)
+  Salary Statistics:
+    Mean: $181,438.17
+    Median: $186,000.00
+    Min: $73,546.00
+    Max: $312,200.00
+    Std Dev: $64,054.49
+  Experience Level Distribution:
+    SE: 16 (66.7%)
+    MI: 6 (25.0%)
+    EN: 1 (4.2%)
+    EX: 1 (4.2%)
+  Company Size Distribution:
+    M: 23 (95.8%)
+    L: 1 (4.2%)
+  Remote Ratio Distribution:
+    0%: 15 (62.5%)
+    100%: 8 (33.3%)
+    50%: 1 (4.2%)
+
+Cluster 37:
+  Size: 8 samples (0.02%)
+  Salary Statistics:
+    Mean: $124,312.50
+    Median: $89,250.00
+    Min: $54,000.00
+    Max: $250,000.00
+    Std Dev: $77,474.85
+  Experience Level Distribution:
+    SE: 3 (37.5%)
+    MI: 3 (37.5%)
+    EN: 2 (25.0%)
+  Company Size Distribution:
+    M: 8 (100.0%)
+  Remote Ratio Distribution:
+    0%: 7 (87.5%)
+    100%: 1 (12.5%)
+
+Cluster 38:
+  Size: 20 samples (0.05%)
+  Salary Statistics:
+    Mean: $128,092.60
+    Median: $137,000.00
+    Min: $36,912.00
+    Max: $201,600.00
+    Std Dev: $49,113.65
+  Experience Level Distribution:
+    SE: 10 (50.0%)
+    EN: 6 (30.0%)
+    MI: 3 (15.0%)
+    EX: 1 (5.0%)
+  Company Size Distribution:
+    M: 20 (100.0%)
+  Remote Ratio Distribution:
+    0%: 17 (85.0%)
+    100%: 3 (15.0%)
+
+Cluster 39:
+  Size: 18 samples (0.05%)
+  Salary Statistics:
+    Mean: $198,726.11
+    Median: $192,980.00
+    Min: $79,700.00
+    Max: $385,000.00
+    Std Dev: $84,319.69
+  Experience Level Distribution:
+    SE: 10 (55.6%)
+    MI: 7 (38.9%)
+    EX: 1 (5.6%)
+  Company Size Distribution:
+    M: 17 (94.4%)
+    L: 1 (5.6%)
+  Remote Ratio Distribution:
+    0%: 12 (66.7%)
+    100%: 5 (27.8%)
+    50%: 1 (5.6%)
+
+Cluster 40:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $127,246.50
+    Median: $144,550.00
+    Min: $43,779.00
+    Max: $179,300.00
+    Std Dev: $48,172.61
+  Experience Level Distribution:
+    SE: 5 (83.3%)
+    MI: 1 (16.7%)
+  Company Size Distribution:
+    M: 4 (66.7%)
+    L: 2 (33.3%)
+  Remote Ratio Distribution:
+    100%: 3 (50.0%)
+    0%: 3 (50.0%)
+
+Cluster 41:
+  Size: 13 samples (0.03%)
+  Salary Statistics:
+    Mean: $141,956.77
+    Median: $127,274.00
+    Min: $47,586.00
+    Max: $230,000.00
+    Std Dev: $63,996.49
+  Experience Level Distribution:
+    SE: 9 (69.2%)
+    MI: 2 (15.4%)
+    EN: 1 (7.7%)
+    EX: 1 (7.7%)
+  Company Size Distribution:
+    M: 13 (100.0%)
+  Remote Ratio Distribution:
+    0%: 8 (61.5%)
+    100%: 5 (38.5%)
+
+Cluster 42:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $163,116.50
+    Median: $165,400.00
+    Min: $69,127.00
+    Max: $324,000.00
+    Std Dev: $93,962.50
+  Experience Level Distribution:
+    MI: 2 (33.3%)
+    SE: 2 (33.3%)
+    EX: 1 (16.7%)
+    EN: 1 (16.7%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    0%: 5 (83.3%)
+    100%: 1 (16.7%)
+
+Cluster 43:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $132,012.86
+    Median: $118,050.00
+    Min: $84,600.00
+    Max: $189,750.00
+    Std Dev: $42,948.32
+  Experience Level Distribution:
+    MI: 3 (42.9%)
+    SE: 3 (42.9%)
+    EX: 1 (14.3%)
+  Company Size Distribution:
+    M: 5 (71.4%)
+    L: 2 (28.6%)
+  Remote Ratio Distribution:
+    0%: 5 (71.4%)
+    100%: 2 (28.6%)
+
+Cluster 44:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $113,015.71
+    Median: $96,600.00
+    Min: $47,500.00
+    Max: $225,000.00
+    Std Dev: $61,463.95
+  Experience Level Distribution:
+    MI: 4 (57.1%)
+    EN: 2 (28.6%)
+    SE: 1 (14.3%)
+  Company Size Distribution:
+    M: 7 (100.0%)
+  Remote Ratio Distribution:
+    0%: 5 (71.4%)
+    100%: 2 (28.6%)
+
+Cluster 45:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $163,092.00
+    Median: $174,500.00
+    Min: $86,128.00
+    Max: $220,000.00
+    Std Dev: $59,290.01
+  Experience Level Distribution:
+    SE: 3 (50.0%)
+    MI: 2 (33.3%)
+    EX: 1 (16.7%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    100%: 3 (50.0%)
+    0%: 3 (50.0%)
+
+Cluster 46:
+  Size: 59 samples (0.16%)
+  Salary Statistics:
+    Mean: $165,325.51
+    Median: $139,000.00
+    Min: $35,735.00
+    Max: $530,000.00
+    Std Dev: $107,166.69
+  Experience Level Distribution:
+    SE: 31 (52.5%)
+    MI: 19 (32.2%)
+    EN: 7 (11.9%)
+    EX: 2 (3.4%)
+  Company Size Distribution:
+    M: 56 (94.9%)
+    L: 3 (5.1%)
+  Remote Ratio Distribution:
+    0%: 39 (66.1%)
+    100%: 18 (30.5%)
+    50%: 2 (3.4%)
+
+Cluster 47:
+  Size: 23 samples (0.06%)
+  Salary Statistics:
+    Mean: $177,770.09
+    Median: $133,800.00
+    Min: $56,250.00
+    Max: $598,184.00
+    Std Dev: $123,338.52
+  Experience Level Distribution:
+    SE: 14 (60.9%)
+    MI: 8 (34.8%)
+    EN: 1 (4.3%)
+  Company Size Distribution:
+    M: 23 (100.0%)
+  Remote Ratio Distribution:
+    0%: 18 (78.3%)
+    100%: 5 (21.7%)
+
+Cluster 48:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $164,933.33
+    Median: $150,000.00
+    Min: $70,000.00
+    Max: $256,000.00
+    Std Dev: $70,388.82
+  Experience Level Distribution:
+    SE: 4 (66.7%)
+    MI: 2 (33.3%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (66.7%)
+    100%: 2 (33.3%)
+
+Cluster 49:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $158,171.43
+    Median: $157,600.00
+    Min: $91,300.00
+    Max: $284,000.00
+    Std Dev: $72,272.33
+  Experience Level Distribution:
+    MI: 4 (57.1%)
+    SE: 2 (28.6%)
+    EN: 1 (14.3%)
+  Company Size Distribution:
+    M: 7 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (57.1%)
+    100%: 3 (42.9%)
+
+Cluster 50:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $131,423.50
+    Median: $121,475.00
+    Min: $63,291.00
+    Max: $202,300.00
+    Std Dev: $63,041.53
+  Experience Level Distribution:
+    SE: 4 (66.7%)
+    MI: 2 (33.3%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (66.7%)
+    100%: 2 (33.3%)
+
+Cluster 51:
+  Size: 9 samples (0.02%)
+  Salary Statistics:
+    Mean: $179,150.00
+    Median: $176,900.00
+    Min: $80,600.00
+    Max: $303,000.00
+    Std Dev: $73,060.92
+  Experience Level Distribution:
+    SE: 6 (66.7%)
+    MI: 2 (22.2%)
+    EN: 1 (11.1%)
+  Company Size Distribution:
+    M: 9 (100.0%)
+  Remote Ratio Distribution:
+    0%: 8 (88.9%)
+    100%: 1 (11.1%)
+
+Cluster 52:
+  Size: 10 samples (0.03%)
+  Salary Statistics:
+    Mean: $117,631.80
+    Median: $93,767.00
+    Min: $41,684.00
+    Max: $252,900.00
+    Std Dev: $77,374.26
+  Experience Level Distribution:
+    MI: 5 (50.0%)
+    SE: 3 (30.0%)
+    EN: 2 (20.0%)
+  Company Size Distribution:
+    M: 8 (80.0%)
+    L: 2 (20.0%)
+  Remote Ratio Distribution:
+    0%: 6 (60.0%)
+    100%: 3 (30.0%)
+    50%: 1 (10.0%)
+
+Cluster 53:
+  Size: 8 samples (0.02%)
+  Salary Statistics:
+    Mean: $102,484.38
+    Median: $94,994.00
+    Min: $50,526.00
+    Max: $160,284.00
+    Std Dev: $44,681.76
+  Experience Level Distribution:
+    SE: 4 (50.0%)
+    MI: 3 (37.5%)
+    EN: 1 (12.5%)
+  Company Size Distribution:
+    M: 7 (87.5%)
+    L: 1 (12.5%)
+  Remote Ratio Distribution:
+    0%: 5 (62.5%)
+    100%: 3 (37.5%)
+
+Cluster 54:
+  Size: 21 samples (0.06%)
+  Salary Statistics:
+    Mean: $152,925.76
+    Median: $130,900.00
+    Min: $26,992.00
+    Max: $314,200.00
+    Std Dev: $86,903.21
+  Experience Level Distribution:
+    SE: 9 (42.9%)
+    MI: 7 (33.3%)
+    EN: 5 (23.8%)
+  Company Size Distribution:
+    M: 18 (85.7%)
+    L: 3 (14.3%)
+  Remote Ratio Distribution:
+    0%: 16 (76.2%)
+    100%: 5 (23.8%)
+
+Cluster 55:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $105,207.00
+    Median: $104,091.00
+    Min: $45,000.00
+    Max: $176,000.00
+    Std Dev: $52,062.13
+  Experience Level Distribution:
+    EN: 2 (33.3%)
+    MI: 2 (33.3%)
+    SE: 2 (33.3%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (66.7%)
+    100%: 2 (33.3%)
+
+Cluster 56:
+  Size: 8 samples (0.02%)
+  Salary Statistics:
+    Mean: $174,931.25
+    Median: $146,300.00
+    Min: $79,350.00
+    Max: $465,000.00
+    Std Dev: $122,388.80
+  Experience Level Distribution:
+    SE: 4 (50.0%)
+    MI: 3 (37.5%)
+    EN: 1 (12.5%)
+  Company Size Distribution:
+    M: 8 (100.0%)
+  Remote Ratio Distribution:
+    0%: 6 (75.0%)
+    100%: 2 (25.0%)
+
+Cluster 57:
+  Size: 12 samples (0.03%)
+  Salary Statistics:
+    Mean: $155,765.33
+    Median: $148,050.00
+    Min: $60,969.00
+    Max: $310,000.00
+    Std Dev: $71,224.44
+  Experience Level Distribution:
+    SE: 5 (41.7%)
+    EN: 3 (25.0%)
+    MI: 3 (25.0%)
+    EX: 1 (8.3%)
+  Company Size Distribution:
+    M: 11 (91.7%)
+    L: 1 (8.3%)
+  Remote Ratio Distribution:
+    0%: 11 (91.7%)
+    100%: 1 (8.3%)
+
+Cluster 58:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $186,557.33
+    Median: $201,582.00
+    Min: $40,900.00
+    Max: $305,280.00
+    Std Dev: $105,393.42
+  Experience Level Distribution:
+    SE: 3 (50.0%)
+    MI: 2 (33.3%)
+    EX: 1 (16.7%)
+  Company Size Distribution:
+    M: 5 (83.3%)
+    L: 1 (16.7%)
+  Remote Ratio Distribution:
+    0%: 4 (66.7%)
+    100%: 2 (33.3%)
+
+Cluster 59:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $147,496.17
+    Median: $135,993.50
+    Min: $105,000.00
+    Max: $234,500.00
+    Std Dev: $46,100.99
+  Experience Level Distribution:
+    MI: 3 (50.0%)
+    SE: 3 (50.0%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (66.7%)
+    100%: 2 (33.3%)
+
+Cluster 60:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $158,818.80
+    Median: $161,000.00
+    Min: $48,000.00
+    Max: $260,000.00
+    Std Dev: $81,398.92
+  Experience Level Distribution:
+    SE: 4 (80.0%)
+    MI: 1 (20.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    100%: 3 (60.0%)
+    0%: 2 (40.0%)
+
+Cluster 61:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $144,665.20
+    Median: $109,746.00
+    Min: $84,400.00
+    Max: $290,180.00
+    Std Dev: $86,129.08
+  Experience Level Distribution:
+    SE: 3 (60.0%)
+    MI: 2 (40.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (80.0%)
+    100%: 1 (20.0%)
+
+Cluster 62:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $140,195.00
+    Median: $149,000.00
+    Min: $73,826.00
+    Max: $174,500.00
+    Std Dev: $39,823.30
+  Experience Level Distribution:
+    SE: 4 (80.0%)
+    MI: 1 (20.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 3 (60.0%)
+    100%: 2 (40.0%)
+
+Cluster 63:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $162,018.71
+    Median: $145,200.00
+    Min: $94,444.00
+    Max: $275,000.00
+    Std Dev: $70,800.55
+  Experience Level Distribution:
+    SE: 5 (71.4%)
+    MI: 1 (14.3%)
+    EN: 1 (14.3%)
+  Company Size Distribution:
+    M: 7 (100.0%)
+  Remote Ratio Distribution:
+    0%: 5 (71.4%)
+    100%: 2 (28.6%)
+
+Cluster 64:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $124,221.67
+    Median: $131,215.00
+    Min: $56,900.00
+    Max: $180,000.00
+    Std Dev: $44,109.14
+  Experience Level Distribution:
+    MI: 2 (33.3%)
+    SE: 2 (33.3%)
+    EN: 2 (33.3%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (66.7%)
+    100%: 2 (33.3%)
+
+Cluster 65:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $146,278.00
+    Median: $144,212.00
+    Min: $90,011.00
+    Max: $210,000.00
+    Std Dev: $36,146.53
+  Experience Level Distribution:
+    MI: 4 (57.1%)
+    SE: 2 (28.6%)
+    EN: 1 (14.3%)
+  Company Size Distribution:
+    M: 7 (100.0%)
+  Remote Ratio Distribution:
+    0%: 6 (85.7%)
+    100%: 1 (14.3%)
+
+Cluster 66:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $89,692.00
+    Median: $57,894.00
+    Min: $49,216.00
+    Max: $190,000.00
+    Std Dev: $58,861.55
+  Experience Level Distribution:
+    MI: 5 (100.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (80.0%)
+    100%: 1 (20.0%)
+
+Cluster 67:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $173,760.57
+    Median: $189,873.00
+    Min: $88,888.00
+    Max: $227,000.00
+    Std Dev: $50,915.01
+  Experience Level Distribution:
+    SE: 5 (71.4%)
+    MI: 2 (28.6%)
+  Company Size Distribution:
+    M: 7 (100.0%)
+  Remote Ratio Distribution:
+    0%: 7 (100.0%)
+
+Cluster 68:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $143,580.00
+    Median: $139,100.00
+    Min: $96,000.00
+    Max: $228,800.00
+    Std Dev: $52,806.65
+  Experience Level Distribution:
+    SE: 2 (40.0%)
+    MI: 2 (40.0%)
+    EX: 1 (20.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 3 (60.0%)
+    100%: 2 (40.0%)
+
+Cluster 69:
+  Size: 9 samples (0.02%)
+  Salary Statistics:
+    Mean: $162,017.00
+    Median: $162,225.00
+    Min: $59,570.00
+    Max: $238,518.00
+    Std Dev: $55,004.07
+  Experience Level Distribution:
+    SE: 5 (55.6%)
+    MI: 3 (33.3%)
+    EX: 1 (11.1%)
+  Company Size Distribution:
+    M: 9 (100.0%)
+  Remote Ratio Distribution:
+    0%: 5 (55.6%)
+    100%: 4 (44.4%)
+
+Cluster 70:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $177,427.14
+    Median: $144,000.00
+    Min: $101,540.00
+    Max: $293,000.00
+    Std Dev: $78,717.47
+  Experience Level Distribution:
+    SE: 5 (71.4%)
+    EN: 2 (28.6%)
+  Company Size Distribution:
+    M: 7 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (57.1%)
+    100%: 3 (42.9%)
+
+Cluster 71:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $89,089.50
+    Median: $86,113.50
+    Min: $55,555.00
+    Max: $133,300.00
+    Std Dev: $28,406.91
+  Experience Level Distribution:
+    SE: 4 (66.7%)
+    EN: 1 (16.7%)
+    MI: 1 (16.7%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (66.7%)
+    100%: 2 (33.3%)
+
+Cluster 72:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $113,048.80
+    Median: $95,000.00
+    Min: $21,000.00
+    Max: $208,000.00
+    Std Dev: $69,912.75
+  Experience Level Distribution:
+    SE: 3 (60.0%)
+    MI: 2 (40.0%)
+  Company Size Distribution:
+    M: 4 (80.0%)
+    S: 1 (20.0%)
+  Remote Ratio Distribution:
+    0%: 4 (80.0%)
+    100%: 1 (20.0%)
+
+Cluster 73:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $130,330.00
+    Median: $96,200.00
+    Min: $55,250.00
+    Max: $241,200.00
+    Std Dev: $76,855.25
+  Experience Level Distribution:
+    MI: 2 (40.0%)
+    EN: 2 (40.0%)
+    SE: 1 (20.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (80.0%)
+    100%: 1 (20.0%)
+
+Cluster 74:
+  Size: 15 samples (0.04%)
+  Salary Statistics:
+    Mean: $151,223.33
+    Median: $129,200.00
+    Min: $64,900.00
+    Max: $333,500.00
+    Std Dev: $67,221.99
+  Experience Level Distribution:
+    SE: 11 (73.3%)
+    MI: 3 (20.0%)
+    EX: 1 (6.7%)
+  Company Size Distribution:
+    M: 14 (93.3%)
+    L: 1 (6.7%)
+  Remote Ratio Distribution:
+    0%: 12 (80.0%)
+    100%: 3 (20.0%)
+
+Cluster 75:
+  Size: 10 samples (0.03%)
+  Salary Statistics:
+    Mean: $117,509.70
+    Median: $127,500.00
+    Min: $31,578.00
+    Max: $204,900.00
+    Std Dev: $57,164.60
+  Experience Level Distribution:
+    SE: 6 (60.0%)
+    EN: 2 (20.0%)
+    MI: 2 (20.0%)
+  Company Size Distribution:
+    M: 10 (100.0%)
+  Remote Ratio Distribution:
+    0%: 6 (60.0%)
+    100%: 4 (40.0%)
+
+Cluster 76:
+  Size: 9 samples (0.02%)
+  Salary Statistics:
+    Mean: $134,992.11
+    Median: $125,000.00
+    Min: $79,000.00
+    Max: $310,000.00
+    Std Dev: $70,040.00
+  Experience Level Distribution:
+    SE: 4 (44.4%)
+    MI: 3 (33.3%)
+    EN: 2 (22.2%)
+  Company Size Distribution:
+    M: 9 (100.0%)
+  Remote Ratio Distribution:
+    0%: 8 (88.9%)
+    100%: 1 (11.1%)
+
+Cluster 77:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $160,451.71
+    Median: $109,800.00
+    Min: $49,500.00
+    Max: $309,000.00
+    Std Dev: $97,107.43
+  Experience Level Distribution:
+    SE: 6 (85.7%)
+    MI: 1 (14.3%)
+  Company Size Distribution:
+    M: 7 (100.0%)
+  Remote Ratio Distribution:
+    0%: 5 (71.4%)
+    100%: 2 (28.6%)
+
+Cluster 78:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $125,520.00
+    Median: $96,600.00
+    Min: $48,000.00
+    Max: $293,000.00
+    Std Dev: $101,005.21
+  Experience Level Distribution:
+    SE: 2 (40.0%)
+    MI: 1 (20.0%)
+    EX: 1 (20.0%)
+    EN: 1 (20.0%)
+  Company Size Distribution:
+    M: 4 (80.0%)
+    S: 1 (20.0%)
+  Remote Ratio Distribution:
+    0%: 4 (80.0%)
+    100%: 1 (20.0%)
+
+Cluster 79:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $134,300.00
+    Median: $167,800.00
+    Min: $42,700.00
+    Max: $215,000.00
+    Std Dev: $73,991.01
+  Experience Level Distribution:
+    SE: 3 (60.0%)
+    EN: 1 (20.0%)
+    MI: 1 (20.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (80.0%)
+    100%: 1 (20.0%)
+
+Cluster 80:
+  Size: 11 samples (0.03%)
+  Salary Statistics:
+    Mean: $212,543.73
+    Median: $183,310.00
+    Min: $94,700.00
+    Max: $643,750.00
+    Std Dev: $153,155.70
+  Experience Level Distribution:
+    SE: 6 (54.5%)
+    MI: 4 (36.4%)
+    EN: 1 (9.1%)
+  Company Size Distribution:
+    M: 11 (100.0%)
+  Remote Ratio Distribution:
+    0%: 9 (81.8%)
+    100%: 2 (18.2%)
+
+Cluster 81:
+  Size: 8 samples (0.02%)
+  Salary Statistics:
+    Mean: $126,267.75
+    Median: $107,250.00
+    Min: $79,500.00
+    Max: $225,000.00
+    Std Dev: $51,217.86
+  Experience Level Distribution:
+    EN: 3 (37.5%)
+    SE: 2 (25.0%)
+    MI: 2 (25.0%)
+    EX: 1 (12.5%)
+  Company Size Distribution:
+    M: 8 (100.0%)
+  Remote Ratio Distribution:
+    0%: 7 (87.5%)
+    100%: 1 (12.5%)
+
+Cluster 82:
+  Size: 8 samples (0.02%)
+  Salary Statistics:
+    Mean: $177,241.00
+    Median: $189,374.00
+    Min: $85,000.00
+    Max: $260,000.00
+    Std Dev: $59,394.60
+  Experience Level Distribution:
+    SE: 4 (50.0%)
+    MI: 2 (25.0%)
+    EN: 2 (25.0%)
+  Company Size Distribution:
+    M: 7 (87.5%)
+    L: 1 (12.5%)
+  Remote Ratio Distribution:
+    100%: 4 (50.0%)
+    0%: 4 (50.0%)
+
+Cluster 83:
+  Size: 11 samples (0.03%)
+  Salary Statistics:
+    Mean: $158,392.91
+    Median: $157,400.00
+    Min: $84,700.00
+    Max: $267,900.00
+    Std Dev: $61,750.22
+  Experience Level Distribution:
+    MI: 5 (45.5%)
+    SE: 5 (45.5%)
+    EN: 1 (9.1%)
+  Company Size Distribution:
+    M: 11 (100.0%)
+  Remote Ratio Distribution:
+    0%: 9 (81.8%)
+    100%: 2 (18.2%)
+
+Cluster 84:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $136,892.33
+    Median: $134,893.00
+    Min: $111,000.00
+    Max: $170,000.00
+    Std Dev: $24,809.23
+  Experience Level Distribution:
+    MI: 4 (66.7%)
+    SE: 2 (33.3%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    0%: 6 (100.0%)
+
+Cluster 85:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $197,471.80
+    Median: $167,200.00
+    Min: $92,700.00
+    Max: $323,659.00
+    Std Dev: $89,694.54
+  Experience Level Distribution:
+    SE: 5 (100.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 5 (100.0%)
+
+Cluster 86:
+  Size: 8 samples (0.02%)
+  Salary Statistics:
+    Mean: $195,684.38
+    Median: $185,320.00
+    Min: $73,710.00
+    Max: $323,300.00
+    Std Dev: $95,424.45
+  Experience Level Distribution:
+    SE: 5 (62.5%)
+    MI: 2 (25.0%)
+    EX: 1 (12.5%)
+  Company Size Distribution:
+    M: 8 (100.0%)
+  Remote Ratio Distribution:
+    0%: 7 (87.5%)
+    100%: 1 (12.5%)
+
+Cluster 87:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $134,488.33
+    Median: $133,000.00
+    Min: $36,000.00
+    Max: $235,750.00
+    Std Dev: $74,991.02
+  Experience Level Distribution:
+    SE: 4 (66.7%)
+    EN: 1 (16.7%)
+    MI: 1 (16.7%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (66.7%)
+    100%: 2 (33.3%)
+
+Cluster 88:
+  Size: 8 samples (0.02%)
+  Salary Statistics:
+    Mean: $144,131.12
+    Median: $142,200.00
+    Min: $84,700.00
+    Max: $197,829.00
+    Std Dev: $41,485.98
+  Experience Level Distribution:
+    SE: 5 (62.5%)
+    MI: 2 (25.0%)
+    EN: 1 (12.5%)
+  Company Size Distribution:
+    M: 8 (100.0%)
+  Remote Ratio Distribution:
+    0%: 7 (87.5%)
+    100%: 1 (12.5%)
+
+Cluster 89:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $162,573.57
+    Median: $175,000.00
+    Min: $96,750.00
+    Max: $250,000.00
+    Std Dev: $61,595.61
+  Experience Level Distribution:
+    EN: 3 (42.9%)
+    SE: 2 (28.6%)
+    MI: 1 (14.3%)
+    EX: 1 (14.3%)
+  Company Size Distribution:
+    M: 7 (100.0%)
+  Remote Ratio Distribution:
+    0%: 6 (85.7%)
+    100%: 1 (14.3%)
+
+Cluster 90:
+  Size: 10 samples (0.03%)
+  Salary Statistics:
+    Mean: $140,961.40
+    Median: $130,060.00
+    Min: $35,974.00
+    Max: $340,000.00
+    Std Dev: $88,815.89
+  Experience Level Distribution:
+    MI: 6 (60.0%)
+    SE: 2 (20.0%)
+    EN: 1 (10.0%)
+    EX: 1 (10.0%)
+  Company Size Distribution:
+    M: 10 (100.0%)
+  Remote Ratio Distribution:
+    0%: 8 (80.0%)
+    100%: 2 (20.0%)
+
+Cluster 91:
+  Size: 8 samples (0.02%)
+  Salary Statistics:
+    Mean: $165,019.12
+    Median: $167,250.00
+    Min: $57,000.00
+    Max: $253,000.00
+    Std Dev: $58,662.55
+  Experience Level Distribution:
+    SE: 5 (62.5%)
+    MI: 1 (12.5%)
+    EX: 1 (12.5%)
+    EN: 1 (12.5%)
+  Company Size Distribution:
+    M: 8 (100.0%)
+  Remote Ratio Distribution:
+    0%: 7 (87.5%)
+    100%: 1 (12.5%)
+
+Cluster 92:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $105,340.50
+    Median: $103,099.50
+    Min: $28,800.00
+    Max: $172,000.00
+    Std Dev: $61,904.90
+  Experience Level Distribution:
+    SE: 4 (66.7%)
+    EN: 2 (33.3%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    100%: 3 (50.0%)
+    0%: 3 (50.0%)
+
+Cluster 93:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $145,215.20
+    Median: $137,600.00
+    Min: $55,926.00
+    Max: $285,000.00
+    Std Dev: $88,736.56
+  Experience Level Distribution:
+    MI: 2 (40.0%)
+    SE: 2 (40.0%)
+    EN: 1 (20.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 5 (100.0%)
+
+Cluster 94:
+  Size: 9 samples (0.02%)
+  Salary Statistics:
+    Mean: $157,197.22
+    Median: $158,000.00
+    Min: $47,975.00
+    Max: $247,400.00
+    Std Dev: $63,852.33
+  Experience Level Distribution:
+    SE: 4 (44.4%)
+    MI: 4 (44.4%)
+    EX: 1 (11.1%)
+  Company Size Distribution:
+    M: 9 (100.0%)
+  Remote Ratio Distribution:
+    0%: 7 (77.8%)
+    100%: 2 (22.2%)
+
+Cluster 95:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $169,464.40
+    Median: $168,000.00
+    Min: $87,822.00
+    Max: $250,000.00
+    Std Dev: $62,118.92
+  Experience Level Distribution:
+    SE: 3 (60.0%)
+    EX: 1 (20.0%)
+    MI: 1 (20.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (80.0%)
+    100%: 1 (20.0%)
+
+Cluster 96:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $210,940.00
+    Median: $128,600.00
+    Min: $31,200.00
+    Max: $720,000.00
+    Std Dev: $233,174.34
+  Experience Level Distribution:
+    SE: 4 (57.1%)
+    MI: 3 (42.9%)
+  Company Size Distribution:
+    M: 7 (100.0%)
+  Remote Ratio Distribution:
+    0%: 7 (100.0%)
+
+Cluster 97:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $179,633.33
+    Median: $139,050.00
+    Min: $50,200.00
+    Max: $405,500.00
+    Std Dev: $123,459.06
+  Experience Level Distribution:
+    SE: 3 (50.0%)
+    EN: 2 (33.3%)
+    MI: 1 (16.7%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    0%: 6 (100.0%)
+
+Cluster 98:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $181,233.80
+    Median: $185,000.00
+    Min: $150,000.00
+    Max: $209,169.00
+    Std Dev: $27,938.41
+  Experience Level Distribution:
+    MI: 3 (60.0%)
+    SE: 1 (20.0%)
+    EN: 1 (20.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (80.0%)
+    100%: 1 (20.0%)
+
+Cluster 99:
+  Size: 13 samples (0.03%)
+  Salary Statistics:
+    Mean: $184,750.00
+    Median: $122,000.00
+    Min: $90,000.00
+    Max: $419,750.00
+    Std Dev: $120,364.30
+  Experience Level Distribution:
+    SE: 7 (53.8%)
+    MI: 5 (38.5%)
+    EX: 1 (7.7%)
+  Company Size Distribution:
+    M: 13 (100.0%)
+  Remote Ratio Distribution:
+    0%: 9 (69.2%)
+    100%: 4 (30.8%)
+
+Cluster 100:
+  Size: 8 samples (0.02%)
+  Salary Statistics:
+    Mean: $172,992.50
+    Median: $179,870.00
+    Min: $67,350.00
+    Max: $267,100.00
+    Std Dev: $85,393.03
+  Experience Level Distribution:
+    SE: 4 (50.0%)
+    MI: 4 (50.0%)
+  Company Size Distribution:
+    M: 8 (100.0%)
+  Remote Ratio Distribution:
+    0%: 7 (87.5%)
+    100%: 1 (12.5%)
+
+Cluster 101:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $152,914.60
+    Median: $130,000.00
+    Min: $82,673.00
+    Max: $249,300.00
+    Std Dev: $70,923.90
+  Experience Level Distribution:
+    SE: 3 (60.0%)
+    EX: 1 (20.0%)
+    MI: 1 (20.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    100%: 3 (60.0%)
+    0%: 2 (40.0%)
+
+Cluster 102:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $141,372.29
+    Median: $129,000.00
+    Min: $63,520.00
+    Max: $257,336.00
+    Std Dev: $63,382.92
+  Experience Level Distribution:
+    SE: 5 (71.4%)
+    MI: 1 (14.3%)
+    EN: 1 (14.3%)
+  Company Size Distribution:
+    M: 7 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (57.1%)
+    100%: 3 (42.9%)
+
+Cluster 103:
+  Size: 7 samples (0.02%)
+  Salary Statistics:
+    Mean: $129,980.00
+    Median: $126,667.00
+    Min: $20,673.00
+    Max: $244,000.00
+    Std Dev: $70,862.80
+  Experience Level Distribution:
+    SE: 4 (57.1%)
+    MI: 2 (28.6%)
+    EN: 1 (14.3%)
+  Company Size Distribution:
+    M: 6 (85.7%)
+    L: 1 (14.3%)
+  Remote Ratio Distribution:
+    0%: 4 (57.1%)
+    100%: 2 (28.6%)
+    50%: 1 (14.3%)
+
+Cluster 104:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $208,109.33
+    Median: $200,000.00
+    Min: $44,000.00
+    Max: $405,000.00
+    Std Dev: $123,289.05
+  Experience Level Distribution:
+    EX: 2 (33.3%)
+    SE: 2 (33.3%)
+    EN: 1 (16.7%)
+    MI: 1 (16.7%)
+  Company Size Distribution:
+    M: 6 (100.0%)
+  Remote Ratio Distribution:
+    0%: 5 (83.3%)
+    100%: 1 (16.7%)
+
+Cluster 105:
+  Size: 6 samples (0.02%)
+  Salary Statistics:
+    Mean: $153,191.67
+    Median: $142,250.00
+    Min: $94,400.00
+    Max: $266,000.00
+    Std Dev: $61,609.27
+  Experience Level Distribution:
+    SE: 4 (66.7%)
+    MI: 2 (33.3%)
+  Company Size Distribution:
+    M: 5 (83.3%)
+    L: 1 (16.7%)
+  Remote Ratio Distribution:
+    0%: 6 (100.0%)
+
+Cluster 106:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $192,420.00
+    Median: $180,000.00
+    Min: $160,000.00
+    Max: $241,700.00
+    Std Dev: $34,052.42
+  Experience Level Distribution:
+    SE: 3 (60.0%)
+    MI: 1 (20.0%)
+    EX: 1 (20.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (80.0%)
+    100%: 1 (20.0%)
+
+Cluster 107:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $134,159.60
+    Median: $128,398.00
+    Min: $44,000.00
+    Max: $254,400.00
+    Std Dev: $75,850.87
+  Experience Level Distribution:
+    SE: 3 (60.0%)
+    MI: 2 (40.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 5 (100.0%)
+
+Cluster 108:
+  Size: 5 samples (0.01%)
+  Salary Statistics:
+    Mean: $151,386.40
+    Median: $165,500.00
+    Min: $82,783.00
+    Max: $193,000.00
+    Std Dev: $43,885.41
+  Experience Level Distribution:
+    SE: 4 (80.0%)
+    MI: 1 (20.0%)
+  Company Size Distribution:
+    M: 5 (100.0%)
+  Remote Ratio Distribution:
+    0%: 4 (80.0%)
+    100%: 1 (20.0%)
+
+================================================================================
+MODEL COMPARISON
+================================================================================
+
+--- Comparison on Test Set ---
+
+Silhouette Score (higher is better):
+  K-Means: 0.3447
+  DBSCAN: 0.3196
+  Winner: K-Means (by 0.0251)
+
+Calinski-Harabasz Score (higher is better):
+  K-Means: 3436.24
+  DBSCAN: 827.72
+  Winner: K-Means
+
+Davies-Bouldin Score (lower is better):
+  K-Means: 1.0113
+  DBSCAN: 0.5288
+  Winner: DBSCAN
+
+--- Discussion ---
+
+K-Means Advantages:
+  - Guarantees all points are assigned to clusters
+  - Produces spherical clusters
+  - Fast and scalable
+  - Works well when clusters are well-separated
+  - Requires specifying number of clusters beforehand
+
+DBSCAN Advantages:
+  - Can find clusters of arbitrary shapes
+  - Automatically determines number of clusters
+  - Can identify noise/outlier points
+  - Robust to outliers
+  - May produce many noise points if parameters not tuned well
+
+--- Overall Winner: K-Means ---
+
+Reason: K-Means achieves a higher silhouette score (0.3447 vs 0.3196), indicating better-defined clusters. It also assigns all data points to clusters, which is useful for this dataset.
