@@ -1,0 +1,109 @@
+================================================================================
+CLASSIFICATION MODEL RESULTS
+================================================================================
+
+================================================================================
+1. LOGISTIC REGRESSION
+================================================================================
+
+Overall Metrics:
+  Accuracy:  0.2902 (29.02%)
+  Precision: 0.3348 (macro-averaged)
+  Recall:    0.4233 (macro-averaged)
+  F1-Score:  0.2696 (macro-averaged)
+
+Confusion Matrix:
+[[ 759  101  162   56]
+ [  56  155   47   32]
+ [1232  642  709  427]
+ [1192 1656 1018 1084]]
+
+================================================================================
+2. DECISION TREE
+================================================================================
+
+Overall Metrics:
+  Accuracy:  0.3893 (38.93%)
+  Precision: 0.3876 (macro-averaged)
+  Recall:    0.4910 (macro-averaged)
+  F1-Score:  0.3576 (macro-averaged)
+
+Confusion Matrix:
+[[ 696   78  214   90]
+ [  26  174   63   27]
+ [ 674  579 1232  525]
+ [ 668 1405 1348 1529]]
+
+================================================================================
+3. RANDOM FOREST
+================================================================================
+
+Overall Metrics:
+  Accuracy:  0.5872 (58.72%)
+  Precision: 0.4130 (macro-averaged)
+  Recall:    0.3592 (macro-averaged)
+  F1-Score:  0.3619 (macro-averaged)
+
+Confusion Matrix:
+[[ 306    0  296  476]
+ [   8    0   15  267]
+ [ 141    0  831 2038]
+ [ 118    0  492 4340]]
+
+================================================================================
+MODEL COMPARISON
+================================================================================
+
+
+        Model Performance Analysis:
+        
+        1. Accuracy Comparison:
+           - Logistic Regression: 0.2902 (29.02%)
+           - Decision Tree: 0.3893 (38.93%)
+           - Random Forest: 0.5872 (58.72%)
+        
+        2. Precision Comparison:
+           - Logistic Regression: 0.3348
+           - Decision Tree: 0.3876
+           - Random Forest: 0.4130
+           - Higher precision means fewer false positives.
+        
+        3. Recall Comparison:
+           - Logistic Regression: 0.4233
+           - Decision Tree: 0.4910
+           - Random Forest: 0.3592
+           - Higher recall means fewer false negatives.
+        
+        4. F1-Score Comparison:
+           - Logistic Regression: 0.2696
+           - Decision Tree: 0.3576
+           - Random Forest: 0.3619
+           - F1-score balances precision and recall.
+        
+        5. Model Characteristics:
+           - Logistic Regression: Linear model, interpretable coefficients, requires feature scaling,
+             assumes linear relationships, less prone to overfitting with regularization.
+           - Decision Tree: Non-linear model, no scaling needed, can capture complex patterns,
+             more interpretable rules, but may overfit without proper constraints.
+           - Random Forest: Ensemble of decision trees, reduces overfitting, handles non-linear relationships,
+             provides feature importance, generally more robust than single decision tree.
+        
+        6. Recommendation:
+           Based on the metrics, Random Forest performs better overall. However, the choice should
+           also consider:
+           - Interpretability needs
+           - Computational requirements
+           - Generalization to new data
+           - Specific class performance (check per-class metrics)
+        
+
+Side-by-Side Comparison:
+--------------------------------------------------------------------------------------------------------------
+Metric               Logistic Regression       Decision Tree        Random Forest             Winner              
+--------------------------------------------------------------------------------------------------------------
+Accuracy             0.2902                    0.3893               0.5872                    Random Forest       
+Precision            0.3348                    0.3876               0.4130                    Random Forest       
+Recall               0.4233                    0.4910               0.3592                    Decision Tree       
+F1_score             0.2696                    0.3576               0.3619                    Random Forest       
+
+Overall Winner: Random Forest

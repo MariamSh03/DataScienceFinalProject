@@ -1,0 +1,92 @@
+================================================================================
+REGRESSION MODEL RESULTS
+================================================================================
+
+================================================================================
+1. LINEAR REGRESSION
+================================================================================
+
+Overall Metrics:
+  R-squared (R²): 0.1571
+  Mean Squared Error (MSE): 4,973,399,973.95
+  Mean Absolute Error (MAE): $52,572.60
+  Root Mean Squared Error (RMSE): $70,522.34
+
+================================================================================
+2. DECISION TREE REGRESSOR
+================================================================================
+
+Overall Metrics:
+  R-squared (R²): 0.2828
+  Mean Squared Error (MSE): 4,231,679,393.69
+  Mean Absolute Error (MAE): $47,526.31
+  Root Mean Squared Error (RMSE): $65,051.36
+
+================================================================================
+3. RANDOM FOREST REGRESSOR
+================================================================================
+
+Overall Metrics:
+  R-squared (R²): 0.2917
+  Mean Squared Error (MSE): 4,179,173,727.30
+  Mean Absolute Error (MAE): $47,195.26
+  Root Mean Squared Error (RMSE): $64,646.53
+
+================================================================================
+MODEL COMPARISON
+================================================================================
+
+
+        Model Performance Analysis:
+        
+        1. R-squared (R²) Comparison:
+           - Linear Regression: 0.1571
+           - Decision Tree: 0.2828
+           - Random Forest: 0.2917
+           - R² measures the proportion of variance explained by the model. Higher is better.
+        
+        2. Mean Squared Error (MSE) Comparison:
+           - Linear Regression: 4,973,399,973.95
+           - Decision Tree: 4,231,679,393.69
+           - Random Forest: 4,179,173,727.30
+           - MSE measures average squared differences between predictions and actual values. Lower is better.
+        
+        3. Mean Absolute Error (MAE) Comparison:
+           - Linear Regression: $52,572.60
+           - Decision Tree: $47,526.31
+           - Random Forest: $47,195.26
+           - MAE measures average absolute differences. Lower is better, easier to interpret than MSE.
+        
+        4. Root Mean Squared Error (RMSE) Comparison:
+           - Linear Regression: $70,522.34
+           - Decision Tree: $65,051.36
+           - Random Forest: $64,646.53
+           - RMSE is in the same units as the target variable. Lower is better.
+        
+        5. Model Characteristics:
+           - Linear Regression: Linear model, interpretable coefficients, requires feature scaling,
+             assumes linear relationships, fast training and prediction, may underfit complex patterns.
+           - Decision Tree: Non-linear model, no scaling needed, can capture complex patterns,
+             more interpretable rules, but may overfit without proper constraints.
+           - Random Forest: Ensemble of decision trees, reduces overfitting, handles non-linear relationships,
+             provides feature importance, generally more robust than single decision tree.
+        
+        6. Recommendation:
+           Based on the metrics, Random Forest performs better overall. However, the choice should
+           also consider:
+           - Interpretability needs
+           - Computational requirements
+           - Generalization to new data
+           - Business context (e.g., is a $10K error acceptable?)
+        
+
+Side-by-Side Comparison:
+--------------------------------------------------------------------------------------------------------------
+Metric               Linear Regression         Decision Tree        Random Forest             Winner              
+--------------------------------------------------------------------------------------------------------------
+R² Score             0.1571                    0.2828               0.2917                    Random Forest       
+MSE                  4,973,399,973.95          4,231,679,393.69     4,179,173,727.30          Random Forest       
+MAE ($)              52,572.60                 47,526.31            47,195.26                 Random Forest       
+RMSE ($)             70,522.34                 65,051.36            64,646.53                 Random Forest       
+
+Overall Winner: Random Forest
